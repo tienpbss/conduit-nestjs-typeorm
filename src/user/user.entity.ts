@@ -1,5 +1,6 @@
 import { Article } from 'src/article/article.entity';
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinTable,
@@ -7,6 +8,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+
+import { saltRounds } from '../constants';
 
 @Entity()
 export class User {
@@ -41,4 +45,11 @@ export class User {
 
   @OneToMany(() => Article, (article) => article.author)
   authorOf: Article[];
+
+  @BeforeInsert()
+  async hashPassword() {
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, saltRounds);
+    }
+  }
 }
