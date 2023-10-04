@@ -11,8 +11,11 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# enviroment variable
+# Enviroment variable
 .env
+
+# Rest client extension
+wTestapi
 
 # OS
 .DS_Store

@@ -25,7 +25,7 @@ import { ProfileModule } from './profile/profile.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [User, Tag, Article, Comment],
-      synchronize: false,
+      synchronize: true,
     }),
     SampleModule,
     UserModule,
