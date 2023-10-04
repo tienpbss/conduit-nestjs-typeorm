@@ -23,10 +23,10 @@ export class User {
   @Column({ unique: true, nullable: false })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   bio: string;
 
-  @Column()
+  @Column({ nullable: true })
   image: string;
 
   @Column({ nullable: false })
