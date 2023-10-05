@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller()
 export class UserController {
@@ -18,13 +28,18 @@ export class UserController {
     // return 'user sign up';
   }
 
+  @UseGuards(AuthGuard)
   @Get('user')
-  getUser() {
-    return 'current user';
+  async getCurrentUser(@Req() request: any) {
+    return await this.userService.getUserById(request.id);
   }
 
+  @UseGuards(AuthGuard)
   @Put('user')
-  updateUser() {
-    return 'update user';
+  async updateUser(
+    @Body('user') updateUserDto: UpdateUserDto,
+    @Req() request: any,
+  ) {
+    return await this.userService.updateUser(request.userId, updateUserDto);
   }
 }
