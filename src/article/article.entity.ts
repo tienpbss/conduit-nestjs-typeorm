@@ -47,16 +47,16 @@ export class Article {
   @UpdateDateColumn()
   updated: Date;
 
-  @ManyToMany(() => User, (user) => user.favorite)
+  @ManyToMany(() => User, (user) => user.favorite, { cascade: true })
   favoriteBy: User[];
 
-  @ManyToOne(() => User, (user) => user.authorOf)
+  @ManyToOne(() => User, (user) => user.authorOf, { cascade: true })
   author: User;
 
-  @OneToMany(() => Comment, (comment) => comment.article)
+  @OneToMany(() => Comment, (comment) => comment.article, { cascade: true })
   comments: Comment[];
 
-  @ManyToMany(() => Tag, (tag) => tag.articles)
+  @ManyToMany(() => Tag, (tag) => tag.articles, { cascade: true })
   @JoinTable({ name: 'article_tag' })
   tags: Tag[];
 }

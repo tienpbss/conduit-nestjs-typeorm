@@ -28,17 +28,17 @@ export class User {
   @Column({ nullable: false })
   password: string;
 
-  @ManyToMany(() => User, (user) => user.followers)
+  @ManyToMany(() => User, (user) => user.followers, { cascade: true })
   @JoinTable({ name: 'user_following_user' })
   followings: User[];
 
-  @ManyToMany(() => User, (user) => user.followings)
+  @ManyToMany(() => User, (user) => user.followings, { cascade: true })
   followers: User[];
 
-  @ManyToMany(() => Article, (article) => article.favoriteBy)
+  @ManyToMany(() => Article, (article) => article.favoriteBy, { cascade: true })
   @JoinTable({ name: 'user_favorite_article' })
   favorite: Article[];
 
-  @OneToMany(() => Article, (article) => article.author)
+  @OneToMany(() => Article, (article) => article.author, { cascade: true })
   authorOf: Article[];
 }

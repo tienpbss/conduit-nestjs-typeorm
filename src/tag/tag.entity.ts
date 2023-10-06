@@ -12,6 +12,6 @@ export class Tag {
   })
   name: string;
 
-  @ManyToMany(() => Article, (article) => article.tags)
+  @ManyToMany(() => Article, (article) => article.tags, { cascade: true })
   articles: Article[];
 }
