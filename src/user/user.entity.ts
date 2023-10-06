@@ -32,7 +32,7 @@ export class User {
   @JoinTable({ name: 'user_following_user' })
   followings: User[];
 
-  @ManyToMany(() => User, (user) => user.followings, { cascade: true })
+  @ManyToMany(() => User, (user) => user.followings)
   followers: User[];
 
   @ManyToMany(() => Article, (article) => article.favoriteBy, { cascade: true })

@@ -12,6 +12,6 @@ export class Comment {
   })
   body: string;
 
-  @ManyToOne(() => Article, (article) => article.comments, { cascade: true })
+  @ManyToOne(() => Article, (article) => article.comments)
   article: Article;
 }

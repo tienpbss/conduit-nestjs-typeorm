@@ -47,10 +47,10 @@ export class Article {
   @UpdateDateColumn()
   updated: Date;
 
-  @ManyToMany(() => User, (user) => user.favorite, { cascade: true })
+  @ManyToMany(() => User, (user) => user.favorite)
   favoriteBy: User[];
 
-  @ManyToOne(() => User, (user) => user.authorOf, { cascade: true })
+  @ManyToOne(() => User, (user) => user.authorOf)
   author: User;
 
   @OneToMany(() => Comment, (comment) => comment.article, { cascade: true })
