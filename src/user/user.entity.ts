@@ -1,4 +1,5 @@
 import { Article } from 'src/article/article.entity';
+import { Comment } from 'src/article/comment.entity';
 import {
   Column,
   Entity,
@@ -41,4 +42,7 @@ export class User {
 
   @OneToMany(() => Article, (article) => article.author, { cascade: true })
   authorOf: Article[];
+
+  @OneToMany(() => Comment, (comment) => comment.author, { cascade: true })
+  commented: Comment[];
 }
