@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Article } from './article.entity';
 import { User } from 'src/user/user.entity';
 
@@ -12,6 +19,12 @@ export class Comment {
     nullable: false,
   })
   body: string;
+
+  @CreateDateColumn({})
+  created: Date;
+
+  @UpdateDateColumn()
+  updated: Date;
 
   @ManyToOne(() => Article, (article) => article.comments)
   article: Article;
