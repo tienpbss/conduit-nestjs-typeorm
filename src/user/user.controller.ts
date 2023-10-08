@@ -31,7 +31,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Get('user')
   async getCurrentUser(@Req() request: any) {
-    return await this.userService.getUserById(request.id);
+    return await this.userService.getUserById(request.userId);
   }
 
   @UseGuards(AuthGuard)
