@@ -4,11 +4,11 @@ import {
   Get,
   Param,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
-import { ProfileService } from './profile.service';
 import { AuthGuard, AuthGuardOptional } from 'src/auth/auth.guard';
+import { UserId } from 'src/user/userId.decorator';
+import { ProfileService } from './profile.service';
 
 @Controller('profiles')
 export class ProfileController {
@@ -16,18 +16,27 @@ export class ProfileController {
 
   @UseGuards(AuthGuardOptional)
   @Get('/:username')
-  async getProfile(@Param('username') username: string, @Req() request: any) {
-    return await this.profileService.getProfile(request.userId, username);
+  async getProfile(
+    @Param('username') username: string,
+    @UserId() userId: string,
+  ) {
+    return await this.profileService.getProfile(userId, username);
   }
 
   @UseGuards(AuthGuard)
   @Post('/:username/follow')
-  async followUser(@Param('username') username: string, @Req() request: any) {
-    return await this.profileService.follow(request.userId, username);
+  async followUser(
+    @Param('username') username: string,
+    @UserId() userId: string,
+  ) {
+    return await this.profileService.follow(userId, username);
   }
 
   @Delete(':username/follow')
-  async unFollowUser(@Param('username') username: string, @Req() request: any) {
-    return await this.profileService.unFollow(request.userId, username);
+  async unFollowUser(
+    @Param('username') username: string,
+    @UserId() userId: string,
+  ) {
+    return await this.profileService.unFollow(userId, username);
   }
 }

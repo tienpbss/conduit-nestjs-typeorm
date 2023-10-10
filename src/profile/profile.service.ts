@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
+import { ProfileRO } from './profile.interface';
 
 @Injectable()
 export class ProfileService {
@@ -10,15 +11,10 @@ export class ProfileService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async getProfile(userId: null | string, username: string) {
-    const currentUser = userId
-      ? await this.userRepository.findOne({
-          where: { id: userId },
-          relations: {
-            followings: true,
-          },
-        })
-      : null;
+  async getProfile(
+    userId: null | string,
+    username: string,
+  ): Promise<ProfileRO> {
     const profile = await this.userRepository.findOne({
       where: {
         username,
@@ -29,15 +25,11 @@ export class ProfileService {
         image: true,
       },
     });
-    const following = !!(
-      currentUser &&
-      currentUser.followings.filter((u) => u.username === profile.username)
-        .length > 0
-    );
+    const following = await this.checkFollow(userId, username);
     return { profile: { ...profile, following } };
   }
 
-  async follow(userId: string, username: string) {
+  async follow(userId: string, username: string): Promise<ProfileRO> {
     const currentUser = await this.userRepository.findOne({
       where: {
         id: userId,
@@ -68,7 +60,7 @@ export class ProfileService {
     };
   }
 
-  async unFollow(userId: string, username: string) {
+  async unFollow(userId: string, username: string): Promise<ProfileRO> {
     const currentUser = await this.userRepository.findOne({
       where: {
         id: userId,
@@ -94,5 +86,20 @@ export class ProfileService {
         following: false,
       },
     };
+  }
+
+  async checkFollow(userId: string, username: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      relations: {
+        followings: true,
+      },
+    });
+    const isFollowing: boolean =
+      !!user &&
+      user.followings.filter((u) => u.username === username).length > 0;
+    return isFollowing;
   }
 }
