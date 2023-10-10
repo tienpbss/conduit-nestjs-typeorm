@@ -11,15 +11,19 @@ export interface ArticleData {
   description: string;
   body: string;
   tagList: string[];
-  createAt: string;
-  updateAt: string;
+  createAt: Date;
+  updateAt: Date;
   favorited: boolean;
   favoritesCount: number;
   author: AuthorData;
 }
 
+export interface ArticleRO {
+  article: ArticleData;
+}
+
 export interface ListArticleRO {
-  articles: [ArticleData];
+  articles: ArticleData[];
   articlesCount: number;
 }
 
@@ -36,5 +40,5 @@ export interface CommentRO {
 }
 
 export interface ListCommentRO {
-  comments: [CommentData];
+  comments: CommentData[];
 }

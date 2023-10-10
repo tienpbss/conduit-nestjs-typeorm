@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import slugify from 'slugify';
 // import * as lodash from 'lodash';
 
@@ -11,6 +11,9 @@ import { Tag } from 'src/tag/tag.entity';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Comment } from './comment.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { QueryArticleDto } from './dto/query-article.dto';
+import { ProfileService } from 'src/profile/profile.service';
+import { ArticleData } from './article.interface';
 
 @Injectable()
 export class ArticleService {
@@ -23,11 +26,36 @@ export class ArticleService {
     private tagRepository: Repository<Tag>,
     @InjectRepository(Comment)
     private commentRepository: Repository<Comment>,
+    @Inject(ProfileService)
+    private profileService: ProfileService,
   ) {}
 
-  async feed(userId, query) {
-    const limit = parseInt(query.limit) || 20;
-    const offset = parseInt(query.offset) || 0;
+  async feed(userId: string, query: QueryArticleDto) {
+    // const limit = parseInt(query.limit) || 20;
+    // const offset = parseInt(query.offset) || 0;
+
+    // const user = await this.userRepository.findOne({
+    //   where: { id: userId },
+    //   relations: {
+    //     followings: true,
+    //   },
+    // });
+    // const userFollowings = user.followings.map((u) => u.username);
+    // const articleInFeed = await this.articleRepository.find({
+    //   where: {
+    //     author: In(userFollowings),
+    //   },
+    //   order: { created: 'DESC' },
+    //   skip: offset,
+    //   take: limit,
+    // });
+
+    const articleQb = this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.tags', 'tags')
+      .leftJoinAndSelect('article.author', 'author')
+      .leftJoinAndSelect('article.favoriteBy', 'favoriteBy');
+    this.addFilterToArticleQb(articleQb, query);
 
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -36,60 +64,33 @@ export class ArticleService {
       },
     });
     const userFollowings = user.followings.map((u) => u.username);
-    const articleInFeed = await this.articleRepository.find({
-      where: {
-        author: In(userFollowings),
-      },
-      order: { created: 'DESC' },
-      skip: offset,
-      take: limit,
+    articleQb.andWhere('author.username IN (:...userFollowings)', {
+      userFollowings,
     });
-    return articleInFeed;
+
+    const articles = await articleQb.getMany();
+    return {
+      articles: await Promise.all(
+        articles.map((a) => this.createArticleData(userId, a)),
+      ),
+      articleCount: articles.length,
+    };
   }
 
-  async getAll(query) {
-    const { tag, author, favorited } = query;
-    const limit = parseInt(query.limit) || 20;
-    const offset = parseInt(query.offset) || 0;
-
+  async getGlobalArticle(userId: string, query: QueryArticleDto) {
     const articleQb = this.articleRepository
       .createQueryBuilder('article')
-      .leftJoinAndSelect('article.tags', 'tag')
-      .leftJoinAndSelect('article.author', 'author');
-
-    articleQb.where('1=1');
-
-    if (tag) {
-      articleQb.andWhere((qb) => {
-        return (
-          'article.slug IN' +
-          qb
-            .subQuery()
-            .select('article.slug')
-            .from(Article, 'article')
-            .leftJoin('article.tags', 'tag')
-            .where('tag = :tagName', { tagName: tag })
-            .getQuery()
-        );
-      });
-    }
-    if (author) {
-      articleQb.andWhere('author.username = :username', { username: author });
-    }
-    if (favorited) {
-      const userFavorite = await this.userRepository.findOne({
-        where: { username: favorited },
-        relations: {
-          favorite: true,
-        },
-      });
-      const ids = userFavorite.favorite.map((article) => article.id);
-      articleQb.andWhere('article.id IN (:...ids)', { ids });
-    }
-    articleQb.orderBy('article.created', 'DESC');
-    articleQb.skip(offset);
-    articleQb.take(limit);
-    return await articleQb.getMany();
+      .leftJoinAndSelect('article.tags', 'tags')
+      .leftJoinAndSelect('article.author', 'author')
+      .leftJoinAndSelect('article.favoriteBy', 'favoriteBy');
+    this.addFilterToArticleQb(articleQb, query);
+    const articles = await articleQb.getMany();
+    return {
+      articles: await Promise.all(
+        articles.map((a) => this.createArticleData(userId, a)),
+      ),
+      articleCount: articles.length,
+    };
   }
 
   async getArticleBySlug(userId: string | null, slug: string) {
@@ -103,7 +104,7 @@ export class ArticleService {
         tags: true,
       },
     });
-    return this.createArticleData(userId, article);
+    return { article: await this.createArticleData(userId, article) };
   }
 
   async createArticle(userId: string, createArticleDto: CreateArticleDto) {
@@ -291,18 +292,72 @@ export class ArticleService {
     return { article };
   }
 
-  private async createArticleData(userId: string, article: Article) {
+  private async addFilterToArticleQb(
+    articleQb: SelectQueryBuilder<Article>,
+    query: QueryArticleDto,
+  ) {
+    const { tag, author, favorited } = query;
+    const limit = parseInt(query.limit) || 20;
+    const offset = parseInt(query.offset) || 0;
+    articleQb.where('1=1');
+
+    if (tag) {
+      articleQb.andWhere((qb) => {
+        return (
+          'article.slug IN' +
+          qb
+            .subQuery()
+            .select('article.slug')
+            .from(Article, 'article')
+            .leftJoin('article.tags', 'tag')
+            .where('tag = :tagName', { tagName: tag })
+            .getQuery()
+        );
+      });
+    }
+    if (author) {
+      articleQb.andWhere('author.username = :username', { username: author });
+    }
+    if (favorited) {
+      const userFavorite = await this.userRepository.findOne({
+        where: { username: favorited },
+        relations: {
+          favorite: true,
+        },
+      });
+      const ids = userFavorite.favorite.map((article) => article.id);
+      articleQb.andWhere('article.id IN (:...ids)', { ids });
+    }
+    articleQb.orderBy('article.created', 'DESC');
+    articleQb.skip(offset);
+    articleQb.take(limit);
+    return articleQb;
+  }
+
+  private async createArticleData(
+    userId: string,
+    article: Article,
+  ): Promise<ArticleData> {
     const articleData = {
-      ...article,
+      slug: article.slug,
+      title: article.title,
+      description: article.description,
+      body: article.body,
       tagList: article.tags.map((t) => t.name),
-      favorited: article.favoriteBy.find((u) => u.id === userId),
+      createAt: article.created,
+      updateAt: article.updated,
+      favorited: article.favoriteBy.filter((u) => u.id === userId).length > 0,
       favoritesCount: article.favoriteBy.length,
+      author: {
+        username: article.author.username,
+        bio: article.author.bio,
+        image: article.author.image,
+        following: await this.profileService.checkFollow(
+          userId,
+          article.author.username,
+        ),
+      },
     };
-    delete articleData.id;
-    delete articleData.tags;
-    delete articleData.author.id;
-    delete articleData.author.password;
-    delete articleData.author.email;
     return articleData;
   }
 
