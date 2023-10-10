@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
   protected extractTokenFromHeader(request: Request): string | undefined {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    return token;
   }
 }
 

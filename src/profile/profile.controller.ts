@@ -32,6 +32,7 @@ export class ProfileController {
     return await this.profileService.follow(userId, username);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':username/follow')
   async unFollowUser(
     @Param('username') username: string,

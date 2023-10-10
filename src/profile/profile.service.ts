@@ -42,11 +42,6 @@ export class ProfileService {
       where: {
         username,
       },
-      // select: {
-      //   username: true,
-      //   bio: true,
-      //   image: true,
-      // },
     });
     currentUser.followings.push(profile);
     await this.userRepository.save(currentUser);
