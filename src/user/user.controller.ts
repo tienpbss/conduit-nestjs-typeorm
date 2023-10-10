@@ -1,17 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import { UserService } from './user.service';
+import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
+import { UserId } from './userId.decorator';
 
 @Controller()
 export class UserController {
@@ -25,21 +18,20 @@ export class UserController {
   @Post('users')
   async signup(@Body('user') createUserDto: CreateUserDto) {
     return await this.userService.signup(createUserDto);
-    // return 'user sign up';
   }
 
   @UseGuards(AuthGuard)
   @Get('user')
-  async getCurrentUser(@Req() request: any) {
-    return await this.userService.getUserById(request.userId);
+  async getCurrentUser(@UserId() userId: string) {
+    return await this.userService.getById(userId);
   }
 
   @UseGuards(AuthGuard)
   @Put('user')
   async updateUser(
     @Body('user') updateUserDto: UpdateUserDto,
-    @Req() request: any,
+    @UserId() userId: string,
   ) {
-    return await this.userService.updateUser(request.userId, updateUserDto);
+    return await this.userService.update(userId, updateUserDto);
   }
 }

@@ -34,16 +34,13 @@ export class UserService {
   }
 
   async signup(createUserDto: CreateUserDto): Promise<UserRO> {
-    createUserDto.password = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    );
+    createUserDto.password = await this.hashPassword(createUserDto.password);
     const newUser = this.userRepository.create(createUserDto);
     const userSaved = await this.userRepository.save(newUser);
     return await this.createUserRO(userSaved);
   }
 
-  async getUserById(userId: string) {
+  async getById(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -52,12 +49,9 @@ export class UserService {
     return userNoPassword;
   }
 
-  async updateUser(userId: string, updateUserDto: UpdateUserDto) {
+  async update(userId: string, updateUserDto: UpdateUserDto): Promise<UserRO> {
     if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(
-        updateUserDto.password,
-        saltRounds,
-      );
+      updateUserDto.password = await this.hashPassword(updateUserDto.password);
     }
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -67,17 +61,28 @@ export class UserService {
       ...updateUserDto,
     });
     await this.userRepository.save(toSaveUser);
-    return this.removePassword(toSaveUser);
+    return this.createUserRO(toSaveUser);
   }
 
-  async createUserRO(user: User): Promise<UserRO> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id: userId, password, ...userResponse } = user;
+  private async createUserRO(user: User): Promise<UserRO> {
     const jwtPayload = {
-      userId,
+      userId: user.id,
     };
     const jwtToken = await this.jwtService.signAsync(jwtPayload);
-    return { user: { ...userResponse, token: jwtToken } };
+    const userRO = {
+      user: {
+        email: user.email,
+        token: jwtToken,
+        username: user.username,
+        bio: user.bio,
+        image: user.image,
+      },
+    };
+    return userRO;
+  }
+
+  private async hashPassword(password: string) {
+    return await bcrypt.hash(password, saltRounds);
   }
 
   removePassword(user: User) {
