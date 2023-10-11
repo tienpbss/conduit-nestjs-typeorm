@@ -13,7 +13,14 @@ import { Comment } from './comment.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { ProfileService } from 'src/profile/profile.service';
-import { ArticleData } from './article.interface';
+import {
+  ArticleData,
+  ArticleRO,
+  CommentData,
+  CommentRO,
+  ListArticleRO,
+  ListCommentRO,
+} from './article.interface';
 
 @Injectable()
 export class ArticleService {
@@ -30,26 +37,7 @@ export class ArticleService {
     private profileService: ProfileService,
   ) {}
 
-  async feed(userId: string, query: QueryArticleDto) {
-    // const limit = parseInt(query.limit) || 20;
-    // const offset = parseInt(query.offset) || 0;
-
-    // const user = await this.userRepository.findOne({
-    //   where: { id: userId },
-    //   relations: {
-    //     followings: true,
-    //   },
-    // });
-    // const userFollowings = user.followings.map((u) => u.username);
-    // const articleInFeed = await this.articleRepository.find({
-    //   where: {
-    //     author: In(userFollowings),
-    //   },
-    //   order: { created: 'DESC' },
-    //   skip: offset,
-    //   take: limit,
-    // });
-
+  async feed(userId: string, query: QueryArticleDto): Promise<ListArticleRO> {
     const articleQb = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tags')
@@ -73,11 +61,14 @@ export class ArticleService {
       articles: await Promise.all(
         articles.map((a) => this.createArticleData(userId, a)),
       ),
-      articleCount: articles.length,
+      articlesCount: articles.length,
     };
   }
 
-  async getGlobalArticle(userId: string, query: QueryArticleDto) {
+  async getGlobalArticle(
+    userId: string,
+    query: QueryArticleDto,
+  ): Promise<ListArticleRO> {
     const articleQb = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tags')
@@ -89,11 +80,14 @@ export class ArticleService {
       articles: await Promise.all(
         articles.map((a) => this.createArticleData(userId, a)),
       ),
-      articleCount: articles.length,
+      articlesCount: articles.length,
     };
   }
 
-  async getArticleBySlug(userId: string | null, slug: string) {
+  async getArticleBySlug(
+    userId: string | null,
+    slug: string,
+  ): Promise<ArticleRO> {
     const article = await this.articleRepository.findOne({
       where: {
         slug,
@@ -107,7 +101,10 @@ export class ArticleService {
     return { article: await this.createArticleData(userId, article) };
   }
 
-  async createArticle(userId: string, createArticleDto: CreateArticleDto) {
+  async createArticle(
+    userId: string,
+    createArticleDto: CreateArticleDto,
+  ): Promise<ArticleRO> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: {
@@ -131,7 +128,7 @@ export class ArticleService {
     userId: string,
     slug: string,
     updateArticleDto: UpdateArticleDto,
-  ) {
+  ): Promise<ArticleRO> {
     const article = await this.articleRepository.findOne({
       where: {
         slug,
@@ -158,7 +155,7 @@ export class ArticleService {
     return await this.getArticleBySlug(userId, newSlug);
   }
 
-  async deleteArticle(userId: string, slug: string) {
+  async deleteArticle(userId: string, slug: string): Promise<string> {
     const article = await this.articleRepository.findOne({
       where: {
         slug,
@@ -178,7 +175,7 @@ export class ArticleService {
     userId: string,
     slug: string,
     createCommentDto: CreateCommentDto,
-  ) {
+  ): Promise<CommentRO> {
     const user = await this.userRepository.findOne({
       where: {
         id: userId,
@@ -197,18 +194,10 @@ export class ArticleService {
     comment.author = user;
     comment.article = article;
     await this.commentRepository.save(comment);
-    return comment;
+    return { comment: await this.createCommentData(userId, comment) };
   }
 
-  async getComments(userId: string, slug: string) {
-    const user = userId
-      ? await this.userRepository.findOne({
-          where: { id: userId },
-          relations: {
-            followings: true,
-          },
-        })
-      : null;
+  async getComments(userId: string, slug: string): Promise<ListCommentRO> {
     const article = await this.articleRepository.findOne({
       where: { slug },
       relations: {
@@ -216,17 +205,25 @@ export class ArticleService {
           author: true,
         },
       },
+      order: {
+        comments: {
+          created: 'DESC',
+        },
+      },
     });
-    const userFollowings = user ? user.followings.map((u) => u.username) : [];
-    const comments = article.comments.map((c) => {
-      const temp: any = { ...c };
-      temp.author.following = userFollowings.includes(temp.author.username);
-      return temp;
-    });
-    return { comments };
+    const comments = await Promise.all(
+      article.comments.map((c) => {
+        return this.createCommentData(userId, c);
+      }),
+    );
+    return { comments, commentsCount: comments.length };
   }
 
-  async deleteComment(userId: string, slug: string, commentId: string) {
+  async deleteComment(
+    userId: string,
+    slug: string,
+    commentId: string,
+  ): Promise<string> {
     const comment = await this.commentRepository.findOne({
       where: {
         id: commentId,
@@ -242,17 +239,16 @@ export class ArticleService {
     return `delete comment ${commentId} of article ${slug}`;
   }
 
-  async favorite(userId: string, slug: string) {
+  async favorite(userId: string, slug: string): Promise<ArticleRO> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: {
-        favorite: true,
-      },
     });
     const article = await this.articleRepository.findOne({
       where: { slug },
       relations: {
         author: true,
+        tags: true,
+        favoriteBy: true,
       },
       select: {
         author: {
@@ -262,22 +258,18 @@ export class ArticleService {
         },
       },
     });
-    user.favorite.push(article);
-    await this.userRepository.save(user);
-    return { article };
+    article.favoriteBy.push(user);
+    await this.articleRepository.save(article);
+    return { article: await this.createArticleData(userId, article) };
   }
 
-  async unFavorite(userId: string, slug: string) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: {
-        favorite: true,
-      },
-    });
+  async unFavorite(userId: string, slug: string): Promise<ArticleRO> {
     const article = await this.articleRepository.findOne({
       where: { slug },
       relations: {
         author: true,
+        tags: true,
+        favoriteBy: true,
       },
       select: {
         author: {
@@ -287,9 +279,9 @@ export class ArticleService {
         },
       },
     });
-    user.favorite = user.favorite.filter((a) => a.slug != slug);
-    await this.userRepository.save(user);
-    return { article };
+    article.favoriteBy = article.favoriteBy.filter((u) => u.id != userId);
+    await this.articleRepository.save(article);
+    return { article: await this.createArticleData(userId, article) };
   }
 
   private async addFilterToArticleQb(
@@ -361,7 +353,7 @@ export class ArticleService {
     return articleData;
   }
 
-  private async convertTagNameToTagEntity(tagList: string[]) {
+  private async convertTagNameToTagEntity(tagList: string[]): Promise<Tag[]> {
     const listTagEntity = await Promise.all(
       tagList.map(async (t) => {
         const tag =
@@ -374,5 +366,27 @@ export class ArticleService {
       }),
     );
     return listTagEntity;
+  }
+
+  private async createCommentData(
+    userId: string,
+    comment: Comment,
+  ): Promise<CommentData> {
+    const commentData = {
+      id: comment.id,
+      createAt: comment.created,
+      updateAt: comment.updated,
+      body: comment.body,
+      author: {
+        username: comment.author.username,
+        bio: comment.author.bio,
+        image: comment.author.image,
+        following: await this.profileService.checkFollow(
+          userId,
+          comment.author.username,
+        ),
+      },
+    };
+    return commentData;
   }
 }

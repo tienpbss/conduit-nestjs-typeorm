@@ -27,10 +27,10 @@ export interface ListArticleRO {
   articlesCount: number;
 }
 
-interface CommentData {
+export interface CommentData {
   id: string;
-  createAt: string;
-  updateAt: string;
+  createAt: Date;
+  updateAt: Date;
   body: string;
   author: AuthorData;
 }
@@ -41,4 +41,5 @@ export interface CommentRO {
 
 export interface ListCommentRO {
   comments: CommentData[];
+  commentsCount: number;
 }
