@@ -17,6 +17,9 @@ lerna-debug.log*
 # Rest client extension
 wTestapi
 
+# sample (folder for test, dont relevant project)
+/src/sample
+
 # OS
 .DS_Store
 
