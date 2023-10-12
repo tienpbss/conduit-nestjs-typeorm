@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserInfo } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { UserRO } from './user.interface';
-import { LoginDto } from './dto/login.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginInfo } from './dto/login.dto';
+import { UpdateUserInfo } from './dto/update-user.dto';
 import { saltRounds } from 'src/constants';
 
 @Injectable()
@@ -19,8 +19,8 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<UserRO> {
-    const { email, password } = loginDto;
+  async login(loginInfo: LoginInfo): Promise<UserRO> {
+    const { email, password } = loginInfo;
     const userLogin = await this.userRepository.findOne({
       where: {
         email,
@@ -33,9 +33,9 @@ export class UserService {
     return await this.createUserRO(userLogin);
   }
 
-  async signup(createUserDto: CreateUserDto): Promise<UserRO> {
-    createUserDto.password = await this.hashPassword(createUserDto.password);
-    const newUser = this.userRepository.create(createUserDto);
+  async signup(createUserInfo: CreateUserInfo): Promise<UserRO> {
+    createUserInfo.password = await this.hashPassword(createUserInfo.password);
+    const newUser = this.userRepository.create(createUserInfo);
     const userSaved = await this.userRepository.save(newUser);
     return await this.createUserRO(userSaved);
   }
@@ -49,16 +49,21 @@ export class UserService {
     return userNoPassword;
   }
 
-  async update(userId: string, updateUserDto: UpdateUserDto): Promise<UserRO> {
-    if (updateUserDto.password) {
-      updateUserDto.password = await this.hashPassword(updateUserDto.password);
+  async update(
+    userId: string,
+    updateUserInfo: UpdateUserInfo,
+  ): Promise<UserRO> {
+    if (updateUserInfo.password) {
+      updateUserInfo.password = await this.hashPassword(
+        updateUserInfo.password,
+      );
     }
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
     const toSaveUser = this.userRepository.create({
       ...user,
-      ...updateUserDto,
+      ...updateUserInfo,
     });
     await this.userRepository.save(toSaveUser);
     return this.createUserRO(toSaveUser);
