@@ -30,10 +30,3 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(status).json(errors);
   }
 }
-// {
-//   "errors":{
-//     "body": [
-//       "can't be empty"
-//     ]
-//   }
-// }

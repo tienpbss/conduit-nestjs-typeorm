@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEmail, IsNotEmpty, IsObject, ValidateNested } from 'class-validator';
 
 export class CreateUserInfo {
   @ApiProperty()
@@ -17,5 +18,8 @@ export class CreateUserInfo {
 
 export class CreateUserDto {
   @ApiProperty()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CreateUserInfo)
   user: CreateUserInfo;
 }

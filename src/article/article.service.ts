@@ -1,18 +1,23 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import slugify from 'slugify';
 // import * as lodash from 'lodash';
 
 import { Article } from './article.entity';
-import { CreateArticleDto } from './dto/create-article.dto';
+import { Comment } from './comment.entity';
 import { User } from 'src/user/user.entity';
 import { Tag } from 'src/tag/tag.entity';
-import { UpdateArticleDto } from './dto/update-article.dto';
-import { Comment } from './comment.entity';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { QueryArticleDto } from './dto/query-article.dto';
+
 import { ProfileService } from 'src/profile/profile.service';
+
+import {
+  CreateArticleInfo,
+  UpdateArticleInfo,
+  CreateCommentInfo,
+  QueryArticleDto,
+} from './dto';
+
 import {
   ArticleData,
   ArticleRO,
@@ -20,7 +25,7 @@ import {
   CommentRO,
   ListArticleRO,
   ListCommentRO,
-} from './article.interface';
+} from './article.response';
 
 @Injectable()
 export class ArticleService {
@@ -103,7 +108,7 @@ export class ArticleService {
 
   async createArticle(
     userId: string,
-    createArticleDto: CreateArticleDto,
+    createArticleDto: CreateArticleInfo,
   ): Promise<ArticleRO> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -127,7 +132,7 @@ export class ArticleService {
   async updateArticle(
     userId: string,
     slug: string,
-    updateArticleDto: UpdateArticleDto,
+    updateArticleDto: UpdateArticleInfo,
   ): Promise<ArticleRO> {
     const article = await this.articleRepository.findOne({
       where: {
@@ -139,7 +144,7 @@ export class ArticleService {
       },
     });
     if (article.author.id != userId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     const newSlug = updateArticleDto.title
       ? slugify(updateArticleDto.title)
@@ -165,7 +170,7 @@ export class ArticleService {
       },
     });
     if (userId !== article.author.id) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     await this.articleRepository.delete({ slug });
     return `deleted ${slug}`;
@@ -174,7 +179,7 @@ export class ArticleService {
   async createComment(
     userId: string,
     slug: string,
-    createCommentDto: CreateCommentDto,
+    createCommentDto: CreateCommentInfo,
   ): Promise<CommentRO> {
     const user = await this.userRepository.findOne({
       where: {
@@ -233,7 +238,7 @@ export class ArticleService {
       },
     });
     if (userId !== comment.author.id) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     await this.commentRepository.delete({ id: commentId });
     return `delete comment ${commentId} of article ${slug}`;

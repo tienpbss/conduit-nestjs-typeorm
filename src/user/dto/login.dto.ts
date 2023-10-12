@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEmail, IsNotEmpty, IsObject, ValidateNested } from 'class-validator';
 
 export class LoginInfo {
   @ApiProperty()
@@ -13,5 +14,8 @@ export class LoginInfo {
 
 export class LoginDto {
   @ApiProperty()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => LoginInfo)
   user: LoginInfo;
 }

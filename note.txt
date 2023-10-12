@@ -1,3 +1,5 @@
 Them 
     comment count o cho get comment
     statusCode: status, error: exception.message, o cho filter error
+    sua mot so cho not require auth thanh auth optional. vi du: get article
+        => de check da favorited or followed author

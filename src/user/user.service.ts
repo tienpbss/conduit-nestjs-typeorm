@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 
 import { CreateUserInfo } from './dto/create-user.dto';
 import { User } from './user.entity';
-import { UserRO } from './user.interface';
+import { UserRO } from './user.response';
 import { LoginInfo } from './dto/login.dto';
 import { UpdateUserInfo } from './dto/update-user.dto';
 import { saltRounds } from 'src/constants';
@@ -40,13 +40,11 @@ export class UserService {
     return await this.createUserRO(userSaved);
   }
 
-  async getById(userId: string) {
+  async getById(userId: string): Promise<UserRO> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const userNoPassword = this.removePassword(user);
-    return userNoPassword;
+    return await this.createUserRO(user);
   }
 
   async update(

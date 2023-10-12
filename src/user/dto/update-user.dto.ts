@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 
 export class UpdateUserInfo {
   @ApiProperty()
@@ -25,5 +32,8 @@ export class UpdateUserInfo {
 
 export class UpdateUserDto {
   @ApiProperty()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => UpdateUserInfo)
   user: UpdateUserInfo;
 }
