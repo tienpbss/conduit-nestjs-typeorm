@@ -20,8 +20,11 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('BLOG')
     .build();
+  const options = {
+    customSiteTitle: 'Document api',
+  };
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/docs/swagger', app, document);
+  SwaggerModule.setup('/docs/swagger', app, document, options);
 
   await app.listen(3000);
 }
