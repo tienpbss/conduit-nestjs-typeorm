@@ -19,6 +19,7 @@ async function bootstrap() {
     .setDescription('Blog api documentation')
     .setVersion('1.0')
     .addTag('BLOG')
+    .addBearerAuth()
     .build();
   const options = {
     customSiteTitle: 'Document api',

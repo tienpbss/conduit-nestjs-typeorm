@@ -10,6 +10,7 @@ import { AuthGuard, AuthGuardOptional } from 'src/auth/auth.guard';
 import { UserId } from 'src/user/userId.decorator';
 import { ProfileService } from './profile.service';
 import {
+  ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -26,6 +27,7 @@ export class ProfileController {
     summary: 'Get a profile',
     description: 'Get profile an user, auth optional',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Get profile successful',
     type: ProfileRO,
@@ -43,6 +45,7 @@ export class ProfileController {
     summary: 'Follow an user',
     description: 'Follow an user, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Follow successful',
     type: ProfileRO,
@@ -61,6 +64,7 @@ export class ProfileController {
     summary: 'Unfollow an user',
     description: 'Unfollow an user, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Unfollow successful',
     type: ProfileRO,

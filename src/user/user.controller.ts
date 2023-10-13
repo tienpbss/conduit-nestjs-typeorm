@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -52,6 +53,7 @@ export class UserController {
     summary: 'Get current user',
     description: 'Get info and new token user login, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Gets the currently logged-in user',
     type: UserRO,
@@ -67,6 +69,7 @@ export class UserController {
     summary: 'Update user',
     description: 'User update info, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Update current user',
     type: UserRO,

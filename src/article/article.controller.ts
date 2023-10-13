@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -47,6 +48,7 @@ export class ArticleController {
       'Return most 20 recent articles globally by default, provide tag, author, favorited, limit, offset query parameter to filter results. Auth optional',
     // favorited actually is favoriteBy. example: ?favorited=jake
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Return list global article',
     type: ListArticleRO,
@@ -63,6 +65,7 @@ export class ArticleController {
       'Return multiple articles created by followed users, ordered by most recent first. Auth required',
     // favorited actually is favoriteBy. example: ?favorited=jake
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Return list feed article',
     type: ListArticleRO,
@@ -78,6 +81,7 @@ export class ArticleController {
     summary: 'Get an article',
     description: 'Get an article, auth optional',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Return an article',
     type: ArticleRO,
@@ -92,6 +96,7 @@ export class ArticleController {
     summary: 'Create article',
     description: 'Create an article, auth required',
   })
+  @ApiBearerAuth()
   @ApiCreatedResponse({
     description: 'Create an article',
     type: ArticleRO,
@@ -114,6 +119,7 @@ export class ArticleController {
     summary: 'Update article',
     description: 'Update an article, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Update an article',
     type: ArticleRO,
@@ -139,6 +145,7 @@ export class ArticleController {
     summary: 'Delete an article',
     description: 'Delete an article, auth required',
   })
+  @ApiBearerAuth()
   @ApiCreatedResponse({
     description: 'Delete an article',
   })
@@ -154,6 +161,7 @@ export class ArticleController {
     summary: 'Create a comment',
     description: 'Create a article, auth required',
   })
+  @ApiBearerAuth()
   @ApiCreatedResponse({
     description: 'Create a comment',
     type: CommentRO,
@@ -178,6 +186,7 @@ export class ArticleController {
     summary: 'Get comments of an article',
     description: 'Get comments of an article, auth optional',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Return all comment of article',
     type: ListCommentRO,
@@ -192,6 +201,7 @@ export class ArticleController {
     summary: 'Delete a comment',
     description: 'User delete a comment, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({ description: 'Delete comment' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden. Example: Not is Author' })
@@ -209,6 +219,7 @@ export class ArticleController {
     summary: 'User favorite an article',
     description: 'User favorite a article, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Favorite article',
     type: ArticleRO,
@@ -224,6 +235,7 @@ export class ArticleController {
     summary: 'User unfavorite an article',
     description: 'User unfavorite a article, auth required',
   })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'unfavorite article',
     type: ArticleRO,
