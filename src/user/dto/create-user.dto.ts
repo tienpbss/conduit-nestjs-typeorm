@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsObject, ValidateNested } from 'class-validator';
+import { IsEmailAlreadyExist } from '../IsEmailAlreadyExist.decorator';
 
 export class CreateUserInfo {
   @ApiProperty()
@@ -9,6 +10,7 @@ export class CreateUserInfo {
 
   @ApiProperty()
   @IsEmail()
+  @IsEmailAlreadyExist({ message: 'Email already exist' })
   email: string;
 
   @ApiProperty()

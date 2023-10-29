@@ -46,6 +46,13 @@ export class UserService {
     });
     return await this.createUserRO(user);
   }
+  async getByEmail(email: string): Promise<UserRO> {
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (!user) return null;
+    return await this.createUserRO(user);
+  }
 
   async update(
     userId: string,

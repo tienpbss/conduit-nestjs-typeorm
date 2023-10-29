@@ -6,6 +6,8 @@ import { User } from './user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
+import { IsEmailAlreadyExistConstraint } from './IsEmailAlreadyExist.decorator';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
@@ -17,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, IsEmailAlreadyExistConstraint],
+  exports: [UserService],
 })
 export class UserModule {}
