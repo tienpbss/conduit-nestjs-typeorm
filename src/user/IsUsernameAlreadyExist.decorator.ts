@@ -7,26 +7,26 @@ import {
 } from 'class-validator';
 import { UserService } from './user.service';
 
-@ValidatorConstraint({ name: 'isEmailUserAlreadyExist', async: true })
+@ValidatorConstraint({ name: 'isUsernameUserAlreadyExist', async: true })
 @Injectable()
-export class IsEmailAlreadyExistConstraint
+export class IsUsernameAlreadyExistConstraint
   implements ValidatorConstraintInterface
 {
   constructor(protected readonly usersService: UserService) {}
 
   async validate(text: string) {
-    return !(await this.usersService.getByEmail(text));
+    return !(await this.usersService.getBy({ username: text }));
   }
 }
 
-export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
+export function IsUsernameAlreadyExist(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       constraints: [],
-      validator: IsEmailAlreadyExistConstraint,
+      validator: IsUsernameAlreadyExistConstraint,
     });
   };
 }

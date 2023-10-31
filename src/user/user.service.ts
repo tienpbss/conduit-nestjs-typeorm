@@ -26,6 +26,9 @@ export class UserService {
         email,
       },
     });
+    if (!userLogin) {
+      throw new UnauthorizedException();
+    }
     const matchPassword = await bcrypt.compare(password, userLogin.password);
     if (!matchPassword) {
       throw new UnauthorizedException();
@@ -49,6 +52,14 @@ export class UserService {
   async getByEmail(email: string): Promise<UserRO> {
     const user = await this.userRepository.findOne({
       where: { email },
+    });
+    if (!user) return null;
+    return await this.createUserRO(user);
+  }
+
+  async getBy(options: object): Promise<UserRO> {
+    const user = await this.userRepository.findOne({
+      where: { ...options },
     });
     if (!user) return null;
     return await this.createUserRO(user);

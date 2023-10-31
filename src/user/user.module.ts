@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
 import { IsEmailAlreadyExistConstraint } from './IsEmailAlreadyExist.decorator';
+import { IsUsernameAlreadyExistConstraint } from './IsUsernameAlreadyExist.decorator';
 
 @Module({
   imports: [
@@ -19,7 +20,11 @@ import { IsEmailAlreadyExistConstraint } from './IsEmailAlreadyExist.decorator';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService, IsEmailAlreadyExistConstraint],
+  providers: [
+    UserService,
+    IsEmailAlreadyExistConstraint,
+    IsUsernameAlreadyExistConstraint,
+  ],
   exports: [UserService],
 })
 export class UserModule {}
