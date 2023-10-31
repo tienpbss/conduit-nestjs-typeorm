@@ -307,7 +307,7 @@ export class ArticleService {
             .select('article.slug')
             .from(Article, 'article')
             .leftJoin('article.tags', 'tag')
-            .where('tag = :tagName', { tagName: tag })
+            .where('name = :tagName', { tagName: tag })
             .getQuery()
         );
       });
