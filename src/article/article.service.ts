@@ -113,6 +113,10 @@ export class ArticleService {
     });
     return { article: await this.createArticleData(userId, article) };
   }
+  async getArticleBy(options: object) {
+    const article = await this.articleRepository.findOneBy(options);
+    return article;
+  }
 
   async createArticle(
     userId: string,

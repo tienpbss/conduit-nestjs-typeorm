@@ -7,6 +7,7 @@ import { ArticleService } from './article.service';
 import { Tag } from 'src/tag/tag.entity';
 import { User } from 'src/user/user.entity';
 import { ProfileModule } from 'src/profile/profile.module';
+import { IsTitleAlreadyExistConstraint } from './IsTitleAlreadyExist.decorator';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { ProfileModule } from 'src/profile/profile.module';
     ProfileModule,
   ],
   controllers: [ArticleController],
-  providers: [ArticleService],
+  providers: [ArticleService, IsTitleAlreadyExistConstraint],
 })
 export class ArticleModule {}

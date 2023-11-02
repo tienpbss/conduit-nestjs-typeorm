@@ -7,10 +7,12 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
+import { IsTitleAlreadyExist } from '../IsTitleAlreadyExist.decorator';
 
 export class CreateArticleInfo {
   @ApiProperty()
   @IsNotEmpty()
+  @IsTitleAlreadyExist({ message: 'Title already exist' })
   title: string;
 
   @ApiProperty()
