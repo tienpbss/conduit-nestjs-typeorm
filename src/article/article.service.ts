@@ -57,16 +57,19 @@ export class ArticleService {
       },
     });
     const userFollowings = user.followings.map((u) => u.username);
-    articleQb.andWhere('author.username IN (:...userFollowings)', {
-      userFollowings,
-    });
+    articleQb.andWhere(`author.username IN ('${userFollowings.join("', '")}')`);
 
+    const articlesCount = await articleQb.getCount();
+    const limit = parseInt(query.limit) || 20;
+    const offset = parseInt(query.offset) || 0;
+    articleQb.skip(offset);
+    articleQb.take(limit);
     const articles = await articleQb.getMany();
     return {
       articles: await Promise.all(
         articles.map((a) => this.createArticleData(userId, a)),
       ),
-      articlesCount: articles.length,
+      articlesCount,
     };
   }
 
@@ -80,12 +83,17 @@ export class ArticleService {
       .leftJoinAndSelect('article.author', 'author')
       .leftJoinAndSelect('article.favoriteBy', 'favoriteBy');
     this.addFilterToArticleQb(articleQb, query);
+    const articlesCount = await articleQb.getCount();
+    const limit = parseInt(query.limit) || 20;
+    const offset = parseInt(query.offset) || 0;
+    articleQb.skip(offset);
+    articleQb.take(limit);
     const articles = await articleQb.getMany();
     return {
       articles: await Promise.all(
         articles.map((a) => this.createArticleData(userId, a)),
       ),
-      articlesCount: articles.length,
+      articlesCount,
     };
   }
 
@@ -294,8 +302,7 @@ export class ArticleService {
     query: QueryArticleDto,
   ) {
     const { tag, author, favorited } = query;
-    const limit = parseInt(query.limit) || 20;
-    const offset = parseInt(query.offset) || 0;
+
     articleQb.where('1=1');
 
     if (tag) {
@@ -323,11 +330,11 @@ export class ArticleService {
         },
       });
       const ids = userFavorite.favorite.map((article) => article.id);
-      articleQb.andWhere('article.id IN (:...ids)', { ids });
+
+      articleQb.andWhere(`article.id IN ('${ids.join("', '")}')`);
     }
     articleQb.orderBy('article.created', 'DESC');
-    articleQb.skip(offset);
-    articleQb.take(limit);
+
     return articleQb;
   }
 
