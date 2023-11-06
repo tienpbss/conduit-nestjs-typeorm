@@ -7,15 +7,21 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
+import { IsUsernameAlreadyExist } from '../IsUsernameAlreadyExist.decorator';
+import { IsEmailAlreadyExist } from '../IsEmailAlreadyExist.decorator';
 
 export class UpdateUserInfo {
   @ApiProperty()
   @IsEmail()
-  email: string;
+  @IsEmailAlreadyExist({ message: 'Email already exist' })
+  @IsOptional()
+  email?: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  username: string;
+  @IsUsernameAlreadyExist({ message: 'Username already exist' })
+  @IsOptional()
+  username?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -23,11 +29,11 @@ export class UpdateUserInfo {
 
   @ApiProperty()
   @IsOptional()
-  image: string;
+  image?: string;
 
   @ApiProperty()
   @IsOptional()
-  bio: string;
+  bio?: string;
 }
 
 export class UpdateUserDto {
