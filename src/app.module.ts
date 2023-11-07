@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SampleModule } from './sample/sample.module';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './user/user.entity';
 import { Tag } from './tag/tag.entity';
@@ -27,7 +26,6 @@ import { ProfileModule } from './profile/profile.module';
       entities: [User, Tag, Article, Comment],
       synchronize: true,
     }),
-    SampleModule,
     UserModule,
     ArticleModule,
     TagModule,
