@@ -60,7 +60,7 @@ export class AuthGuardOptional implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      request['userId'] = null;
+      request['userId'] = "don't exist";
     } else {
       try {
         const payload = await this.jwtService.verifyAsync(token, {
